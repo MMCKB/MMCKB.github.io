@@ -1113,17 +1113,23 @@ body.wallpaper-transparent #navbar-wrapper #navbar[data-full-width="true"] > div
 }
 
 /* ============================================================
-   Apple 液态玻璃材质 (Liquid Glass)
-   - 仅在「透明壁纸 + 液态玻璃材质(body.liquid-glass)」下生效；
-     缺少 .liquid-glass 时上方旧毛玻璃规则仍生效（二者互斥切换）。
-   - 折射（关键）：在 blur + saturate + brightness 之外，叠加 SVG
-     feTurbulence + feDisplacementMap（见 Layout.astro 注入的
-     #liquid-glass-filter），让背景产生流动般的扭曲——这才是“液态”
-     与“毛玻璃”的本质区别。不支持 url() 滤镜的浏览器（部分 Safari）
-     会忽略该行，自动退回普通毛玻璃。
-   - 高光：顶部 inset 受光带 + 斜向光泽，模拟玻璃受光面。
-   - 色散：左右 inset 阴影做 RGB 边缘分离（左红 / 右青），还原 Apple 边缘彩边。
-   - 自适应：暗色模式降低底色调、收敛色散、增强高光。
+   Apple 液态玻璃材质 (Liquid Glass) — 采用社区成熟方案
+   - 仅在「透明壁纸 + 液态玻璃(body.liquid-glass)」下生效；
+     缺少 .liquid-glass 时上方旧毛玻璃规则仍生效（互斥切换）。
+   - 折射（关键，Chromium 专属）：在 blur + saturate(180%) + brightness
+     之外叠加 SVG feTurbulence + feDisplacementMap（见 Layout.astro 注入的
+     #liquid-glass-filter），让背景产生流动扭曲——这是“液态”与“毛玻璃”
+     的本质区别。Firefox/Safari 不支持 backdrop-filter: url()，会忽略该行
+     自动退回普通毛玻璃（双层写法保证降级）。
+   - 高光（克制）：仅 1px 顶部受光边 + 极淡四周内描边，模拟玻璃边缘吃光，
+     绝不铺大面积白色渐变（塑料感、廉价感来源）。
+   - 色散：左右 inset 阴影做极淡 RGB 边缘分离（左红 / 右青），
+     参考 nikdelvin/liquid-glass 与 Zettersten/skills 的薄描边做法。
+   - 自适应：暗色模式降低底色调、收敛色散。
+   参考来源（均为社区成熟实现，已逐一核对参数）：
+     • nikdelvin/liquid-glass（Astro，同栈；saturate(180%) 兜底 + 薄高光）
+     • Zettersten/skills · glass-card / glass-pill-navbar 模板
+     • dpawlikowski/liquid-glass：scale 12–18 为安全区间（>25 Safari 出 artefacts）
    ============================================================ */
 
 /* 玻璃体：导航栏 / 下拉 / 浮动面板 / 卡片 / 正文 / 评论 / 侧栏 */
@@ -1140,38 +1146,29 @@ body.wallpaper-transparent.liquid-glass #post-comments,
 body.wallpaper-transparent.liquid-glass #left-sidebar .card-base,
 body.wallpaper-transparent.liquid-glass #right-sidebar .card-base,
 body.wallpaper-transparent.liquid-glass .widget-layout .card-base {
-	/* 玻璃基底：模糊 + 饱和 + 提亮（通用，所有浏览器） */
-	backdrop-filter: blur(14px) saturate(180%) brightness(1.08);
-	-webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.08);
-	/* 液态折射增强：叠加 SVG 位移滤镜，让背景产生流动般的扭曲 */
-	backdrop-filter: blur(14px) saturate(180%) brightness(1.08) url(#liquid-glass-filter);
-	-webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.08) url(#liquid-glass-filter);
+	/* 1) 通用毛玻璃：所有浏览器（Chromium/Firefox/Safari）都生效 */
+	-webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.05);
+	backdrop-filter: blur(14px) saturate(180%) brightness(1.05);
+	/* 2) Chromium 专属：叠加 SVG 位移折射，呈现 Apple「液态」扭曲。
+	       不支持 url() 的浏览器会忽略本行、保留上面第 1 行毛玻璃。 */
+	-webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.05) url(#liquid-glass-filter);
+	backdrop-filter: blur(14px) saturate(180%) brightness(1.05) url(#liquid-glass-filter);
 
-	/* 半透明玻璃体 + 顶部强受光带 + 斜向光泽 */
-	background-color: rgba(255, 255, 255, 0.10) !important;
-	background-image:
-		linear-gradient(
-			180deg,
-			rgba(255, 255, 255, 0.55) 0%,
-			rgba(255, 255, 255, 0.08) 16%,
-			rgba(255, 255, 255, 0) 42%
-		),
-		linear-gradient(
-			135deg,
-			rgba(255, 255, 255, 0.18) 0%,
-			rgba(255, 255, 255, 0.03) 45%,
-			rgba(255, 255, 255, 0.12) 100%
-		) !important;
+	/* 约 8% 白色底色（saturate 会抽干饱和，少量白底避免塑料感） */
+	background-color: rgba(255, 255, 255, 0.08) !important;
 
-	border: 1px solid rgba(255, 255, 255, 0.42) !important;
+	/* 极淡 1px 玻璃边 */
+	border: 1px solid rgba(255, 255, 255, 0.18) !important;
 
-	/* 投影 + 顶部受光高光 + 左右边缘 RGB 色散（红 / 青），还原 Apple 玻璃边缘彩边 */
+	/* 投影 + 克制的顶部受光边（1px）+ 极淡四周 + 极淡左右 RGB 色散 */
 	box-shadow:
-		0 8px 30px rgba(0, 0, 0, 0.20),
-		inset 0 1px 1px rgba(255, 255, 255, 0.9),
-		inset 0 -0.5px 1px rgba(0, 0, 0, 0.08),
-		inset 1px 0 2px -1px rgba(255, 30, 86, 0.30),
-		inset -1px 0 2px -1px rgba(30, 170, 255, 0.34) !important;
+		0 8px 30px rgba(0, 0, 0, 0.18),
+		inset 0 1px 0 rgba(255, 255, 255, 0.55),
+		inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+		inset 1px 0 0 rgba(255, 255, 255, 0.10),
+		inset -1px 0 0 rgba(255, 255, 255, 0.10),
+		inset 1px 0 1px -1px rgba(255, 30, 86, 0.14),
+		inset -1px 0 1px -1px rgba(30, 170, 255, 0.16) !important;
 
 	transition:
 		background-color 0.3s ease,
@@ -1180,7 +1177,7 @@ body.wallpaper-transparent.liquid-glass .widget-layout .card-base {
 		backdrop-filter 0.3s ease;
 }
 
-/* 暗色模式：冷底色 + 收敛色散 + 增强高光 */
+/* 暗色模式：冷底色 + 收敛色散 + 同样克制的顶部受光边 */
 :root.dark body.wallpaper-transparent.liquid-glass #navbar[data-transparent-mode] > div,
 :root.dark body.wallpaper-transparent.liquid-glass .dropdown-content,
 :root.dark body.wallpaper-transparent.liquid-glass .float-panel,
@@ -1194,27 +1191,16 @@ body.wallpaper-transparent.liquid-glass .widget-layout .card-base {
 :root.dark body.wallpaper-transparent.liquid-glass #left-sidebar .card-base,
 :root.dark body.wallpaper-transparent.liquid-glass #right-sidebar .card-base,
 :root.dark body.wallpaper-transparent.liquid-glass .widget-layout .card-base {
-	background-color: rgba(18, 20, 28, 0.30) !important;
-	background-image:
-		linear-gradient(
-			180deg,
-			rgba(255, 255, 255, 0.22) 0%,
-			rgba(255, 255, 255, 0.04) 16%,
-			rgba(255, 255, 255, 0) 42%
-		),
-		linear-gradient(
-			135deg,
-			rgba(255, 255, 255, 0.10) 0%,
-			rgba(255, 255, 255, 0.02) 45%,
-			rgba(255, 255, 255, 0.08) 100%
-		) !important;
-	border: 1px solid rgba(255, 255, 255, 0.18) !important;
+	background-color: rgba(18, 20, 28, 0.28) !important;
+	border: 1px solid rgba(255, 255, 255, 0.14) !important;
 	box-shadow:
-		0 8px 32px rgba(0, 0, 0, 0.45),
-		inset 0 1px 1px rgba(255, 255, 255, 0.4),
-		inset 0 -0.5px 1px rgba(0, 0, 0, 0.25),
-		inset 1px 0 2px -1px rgba(255, 60, 110, 0.22),
-		inset -1px 0 2px -1px rgba(60, 180, 255, 0.26) !important;
+		0 8px 32px rgba(0, 0, 0, 0.42),
+		inset 0 1px 0 rgba(255, 255, 255, 0.45),
+		inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+		inset 1px 0 0 rgba(255, 255, 255, 0.08),
+		inset -1px 0 0 rgba(255, 255, 255, 0.08),
+		inset 1px 0 1px -1px rgba(255, 60, 110, 0.12),
+		inset -1px 0 1px -1px rgba(60, 180, 255, 0.14) !important;
 }
 
 /* 导航栏胶囊保持液态圆角 */
