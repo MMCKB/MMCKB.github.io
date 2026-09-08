@@ -514,15 +514,19 @@ const ogImageAlt = propsOgImageAlt ?? pageTitle;
          用绝对定位移出视口而非 display:none，避免部分浏览器在 display:none 的 SVG 中不渲染滤镜。 -->
     <svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden;left:-9999px;top:-9999px">
       <defs>
-        <filter id="liquid-glass-filter" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
-          <!-- 分形噪声生成“凹凸不平的纹理”，模拟玻璃表面的不规则（低频、平缓 = 液态而非噪点） -->
-          <feTurbulence type="fractalNoise" baseFrequency="0.007 0.009" numOctaves="2" seed="7" result="noise" />
-          <!-- 模糊噪声，让波纹更柔和自然 -->
-          <feGaussianBlur in="noise" stdDeviation="1.4" result="blurred" />
-          <!-- 用噪声作为位移图扭曲背景（SourceGraphic），形成液态折射。
-               scale 13 落在 dpawlikowski/liquid-glass 建议的 12–18 安全区间；
-               >25 在 Safari 会产生 artefacts。seed 固定，避免每帧重算噪声。 -->
-          <feDisplacementMap in="SourceGraphic" in2="blurred" scale="13" xChannelSelector="R" yChannelSelector="G" />
+        <filter id="liquid-glass-filter" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+          <!-- 边缘 SDF 位移贴图（参考 Juejin 文章「边缘折射、中间清晰」原则 + Zettersten/skills 实现）：
+               中心 #808080=中性(无位移)，四周由 X(红)/Y(绿) 渐变驱动位移；中性矩形带模糊使
+               中心保持清晰、仅边缘折射 —— 这是 Apple Liquid Glass 与全局湍流「浑浊拉丝」的本质区别。
+               feImage 用 preserveAspectRatio="none" 拉伸到任意尺寸玻璃，尺寸无关。 -->
+          <feImage result="dispMap"
+            x="0" y="0" width="600" height="400"
+            preserveAspectRatio="none"
+            href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'600'%20height%3D'400'%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D'gx'%20x1%3D'0%25'%20y1%3D'0%25'%20x2%3D'100%25'%20y2%3D'0%25'%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D'0%25'%20stop-color%3D'%23000'%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D'100%25'%20stop-color%3D'%23f00'%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D'gy'%20x1%3D'0%25'%20y1%3D'0%25'%20x2%3D'0%25'%20y2%3D'100%25'%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D'0%25'%20stop-color%3D'%23000'%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D'100%25'%20stop-color%3D'%230f0'%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D'b'%3E%3CfeGaussianBlur%20stdDeviation%3D'14'%2F%3E%3C%2Ffilter%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D'600'%20height%3D'400'%20rx%3D'40'%20fill%3D'url%28%23gx%29'%20style%3D'mix-blend-mode%3Ascreen'%2F%3E%0A%20%20%3Crect%20width%3D'600'%20height%3D'400'%20rx%3D'40'%20fill%3D'url%28%23gy%29'%20style%3D'mix-blend-mode%3Ascreen'%2F%3E%0A%20%20%3Crect%20width%3D'600'%20height%3D'400'%20rx%3D'40'%20fill%3D'%23808080'%20filter%3D'url%28%23b%29'%2F%3E%0A%3C%2Fsvg%3E" />
+          <!-- 用位移贴图扭曲背后内容(SourceGraphic)，形成边缘液态折射。
+               scale 20：边缘折射强度（与 dpawlikowski 建议同量级；>25 Safari 出 artefacts）。 -->
+          <feDisplacementMap in="SourceGraphic" in2="dispMap"
+            scale="20" xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </defs>
     </svg>
