@@ -1,0 +1,1125 @@
+/* ============================================================
+ * 站长自定义样式（玻璃拟态 + 浮动导航栏）
+ * 本文件由同步流程从旧版 main.css / navbar.css 完整保留而来，
+ * 在 main.css 末尾引入，因此优先级高于主题默认样式。
+ * 同步上游时请勿删除本文件。
+ * ============================================================ */
+
+/* ---------- 旧版 main.css ---------- */
+@import 'tailwindcss';
+@import './layout-styles.css';
+@import './navbar.css';
+@import './banner-title.css';
+@import './waves.css';
+@import './transition.css';
+@import './custom-scrollbar.css';
+@import './gallery.css';
+@import './anime-bangumi.css';
+@import './tags.css';
+@import './display-settings.css';
+@import './categories.css';
+
+@plugin '@tailwindcss/typography';
+
+/* 暗色模式选择器配置 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4 配置 - 从 tailwind.config.cjs 迁移 */
+@theme {
+  --font-sans:
+    'Roboto', 'sans-serif', ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* 自定义工具类 - Tailwind v4 使用 @utility 定义 */
+@utility expand-animation {
+  position: relative;
+  z-index: 0;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    scale: 0.85;
+    z-index: -10;
+    transition: all 0.15s ease-out;
+  }
+  &:hover::before {
+    background-color: var(--btn-plain-bg-hover);
+    scale: 1;
+  }
+  &:active::before {
+    background-color: var(--btn-plain-bg-active);
+  }
+  &:active {
+    background: none;
+  }
+}
+
+/* 确保平滑滚动 */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 页面顶部渐变高光效果 */
+.top-gradient-highlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 180px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0.15) 60%, rgba(255, 255, 255, 0.05) 80%, transparent 100%);
+    pointer-events: none;
+    z-index: 20;
+    transition: all var(--duration-medium) var(--ease-standard);
+}
+
+/* 暗色主题下的渐变高光效果 */
+:root.dark .top-gradient-highlight {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 30%, rgba(0, 0, 0, 0.15) 60%, rgba(0, 0, 0, 0.05) 80%, transparent 100%);
+}
+
+@layer components {
+    /* View Transitions API 主题切换动画 */
+    /* 为整个文档根元素设置视图过渡 */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 0.5s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        /* 使用混合模式使颜色过渡更平滑 */
+        mix-blend-mode: normal;
+    }
+    
+    /* 视图过渡组 - 使用交叉淡化效果 */
+    ::view-transition-group(root) {
+        animation-duration: 0.5s;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* 淡出旧视图 - 使用更平滑的曲线 */
+    ::view-transition-old(root) {
+        animation-name: theme-fade-out;
+        /* 确保背景色同步切换 */
+        z-index: 2;
+    }
+    
+    /* 淡入新视图 - 使用更平滑的曲线 */
+    ::view-transition-new(root) {
+        animation-name: theme-fade-in;
+        /* 确保新视图在上层 */
+        z-index: 1;
+    }
+    
+    /* 定义淡出动画 - 使用更平滑的缓动函数 */
+    @keyframes theme-fade-out {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+    
+    /* 定义淡入动画 - 从下层淡入 */
+    @keyframes theme-fade-in {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
+    
+    /* 确保边框和分隔线元素在主题切换时有更明确的过渡时长 */
+    .transition,
+    [class*="border"],
+    [class*="transition"] {
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 0.15s;
+    }
+    
+    /* 主题过渡保护类 - 仅在非 View Transitions 模式下使用 */
+    /* 当使用 View Transitions API 时，浏览器会自动处理过渡，不需要禁用 transition */
+    .is-theme-transitioning:not(.use-view-transition) *,
+    .is-theme-transitioning:not(.use-view-transition) *::before,
+    .is-theme-transitioning:not(.use-view-transition) *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    /* 在主题切换时禁用代码块的复杂效果以提升性能 */
+    /* 使用 View Transitions 时也需要禁用代码块动画，因为它们太多了 */
+    .is-theme-transitioning .expressive-code,
+    .is-theme-transitioning .expressive-code * {
+        transition: none !important;
+        animation: none !important;
+        will-change: auto !important;
+    }
+    
+    /* 禁用复杂选择器元素的过渡 - 仅在非 View Transitions 模式下 */
+    .is-theme-transitioning:not(.use-view-transition) .float-panel,
+    .is-theme-transitioning:not(.use-view-transition) .float-panel *,
+    .is-theme-transitioning:not(.use-view-transition) .music-player,
+    .is-theme-transitioning:not(.use-view-transition) .music-player *,
+    .is-theme-transitioning:not(.use-view-transition) .widget,
+    .is-theme-transitioning:not(.use-view-transition) .widget *,
+    .is-theme-transitioning:not(.use-view-transition) .dropdown-content,
+    .is-theme-transitioning:not(.use-view-transition) .dropdown-content * {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    /* 强制使用 contain 隔离渲染上下文 - 仅在非 View Transitions 模式下 */
+    .is-theme-transitioning:not(.use-view-transition) .post-card,
+    .is-theme-transitioning:not(.use-view-transition) .widget,
+    .is-theme-transitioning:not(.use-view-transition) .float-panel {
+        contain: layout style paint !important;
+    }
+    
+    /* 水波纹效果精确同步处理 - 仅在非 View Transitions 模式下 */
+    .is-theme-transitioning:not(.use-view-transition) svg use {
+        /* 禁用过渡但保持动画 */
+        transition: none;
+        /* 强制立即继承页面背景色 */
+        fill: currentColor;
+    }
+    
+    /* 导航栏主题切换保护 - 仅在非 View Transitions 模式下禁用过渡 */
+    .is-theme-transitioning:not(.use-view-transition) #navbar > div,
+    .is-theme-transitioning:not(.use-view-transition) #navbar[data-transparent-mode] > div,
+    .is-theme-transitioning:not(.use-view-transition) #navbar[data-transparent-mode].scrolled > div,
+    .is-theme-transitioning:not(.use-view-transition) body.wallpaper-transparent #navbar[data-transparent-mode] > div,
+    .is-theme-transitioning:not(.use-view-transition) body.wallpaper-transparent #navbar[data-transparent-mode].scrolled > div,
+    .is-theme-transitioning:not(.use-view-transition) #wallpaper-wrapper ~ * #navbar > div,
+    .is-theme-transitioning:not(.use-view-transition) #wallpaper-wrapper ~ * #navbar[data-transparent-mode] > div,
+    .is-theme-transitioning:not(.use-view-transition) body:has(#wallpaper-wrapper) #navbar > div,
+    .is-theme-transitioning:not(.use-view-transition) body:has(#wallpaper-wrapper) #navbar[data-transparent-mode] > div {
+        transition: none !important;
+        backdrop-filter: none !important;
+    }
+    
+    /* 导航栏相关浮动面板的过渡禁用 */
+    .is-theme-transitioning .dropdown-content,
+    .is-theme-transitioning .float-panel,
+    .is-theme-transitioning #display-setting,
+    .is-theme-transitioning #nav-menu-panel,
+    .is-theme-transitioning #translate-panel,
+    .is-theme-transitioning #mobile-toc-panel,
+    .is-theme-transitioning #search-panel {
+        transition: none !important;
+        backdrop-filter: none !important;
+    }
+    
+    .card-base {
+        @apply rounded-(--radius-large) overflow-hidden bg-(--card-bg) transition-colors duration-150;
+    }
+    .card-base-transparent {
+        @apply rounded-(--radius-large) overflow-hidden bg-(--card-bg-transparent) transition-colors duration-150;
+    }
+
+    /* LQIP 占位渐变 */
+    .lqip-placeholder {
+        z-index: 0;
+        transition: opacity 0.5s ease-out;
+    }
+    .lqip-placeholder.loaded {
+        opacity: 0;
+    }
+
+
+    /* 开启边框和阴影效果时的样式 */
+    .enable-card-border .card-base {
+        @apply transition-all duration-300 border border-(--line-divider) shadow-xs;
+    }
+    .enable-card-border .card-base-transparent {
+        @apply transition-all duration-300 border border-(--line-divider) shadow-xs;
+    }
+    .enable-card-border .btn-card {
+        @apply transition-all duration-300 border border-(--line-divider) shadow-xs;
+    }
+
+    /* 导航栏样式适配 */
+    .enable-card-border #navbar > div:not(.absolute) {
+        @apply transition-all duration-300 border shadow-xs;
+        border-color: var(--line-divider) !important;
+    }
+
+    /* 壁纸模式切换期间禁止导航栏边框和阴影闪现 */
+    .is-wallpaper-transitioning #navbar > div {
+        border-color: transparent !important;
+        box-shadow: none !important;
+        transition: none !important;
+    }
+
+    /* 壁纸模式切换期间禁止 #main-grid 的 transform 过渡动画，防止抖动 */
+    /* .is-wallpaper-transitioning #main-grid {
+        transition: none !important;
+    } */
+
+    /* 全屏壁纸模式下的半透明效果 */
+    .wallpaper-transparent .card-base {
+        background-color: var(--card-bg-transparent) !important;
+    }
+ 
+    
+    .wallpaper-transparent #navbar > div {
+        background-color: var(--card-bg-transparent) !important;
+    }
+
+    /* Overlay 模式下，滚动后提高导航栏背景模糊度，增强与正文区分 */
+    .wallpaper-transparent #navbar.navbar-sticky-shadow > div {
+        backdrop-filter: blur(20px) !important;
+     
+    }
+
+    :root.dark .wallpaper-transparent #navbar.navbar-sticky-shadow > div {
+        backdrop-filter: blur(20px) !important;
+    }
+    
+    .wallpaper-transparent .btn-card {
+        background-color: var(--card-bg-transparent) !important;
+    }
+
+    .wallpaper-transparent .bg-\(--card-bg\) {
+        background-color: var(--card-bg-transparent) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6, p, a, span, li, ul, ol, blockquote, code, pre, table, th, td, strong {
+        @apply transition-colors duration-150;
+    }
+    .card-shadow {
+        @apply drop-shadow-[0_2px_4px_rgba(0,0,0,0.005)]
+    }
+    .link {
+        @apply transition-colors duration-150 rounded-md p-1 -m-1 expand-animation;
+    }
+    .link-lg {
+        @apply transition-colors duration-150 rounded-md p-1.5 -m-1.5 expand-animation;
+    }
+    .float-panel {
+        @apply top-21 rounded-(--radius-large) overflow-hidden bg-(--card-bg) transition-colors duration-150 shadow-xl border border-black/5 dark:border-white/10
+    }
+    .float-panel-closed {
+        @apply -translate-y-1 opacity-0 pointer-events-none
+    }
+    .float-panel-closed * {
+        @apply pointer-events-none
+    }
+    .search-panel mark {
+        @apply bg-transparent text-(--primary)
+    }
+
+    .btn-card {
+        @apply transition-colors duration-150 flex items-center justify-center bg-(--card-bg) hover:bg-(--btn-card-bg-hover)
+        active:bg-(--btn-card-bg-active)
+    }
+    .btn-card.disabled {
+        @apply pointer-events-none text-black/10 dark:text-white/10
+    }
+    .btn-plain {
+        @apply transition-colors duration-150 relative flex items-center justify-center bg-none
+        text-black/75 hover:text-(--primary) dark:text-white/75 dark:hover:text-(--primary);
+        &:not(.scale-animation) {
+            @apply hover:bg-(--btn-plain-bg-hover) active:bg-(--btn-plain-bg-active)
+        }
+        &.scale-animation {
+            @apply expand-animation;
+        }
+    }
+    .current-theme-btn {
+        @apply bg-(--btn-plain-bg-hover) text-(--primary);
+    }
+    .btn-regular {
+        @apply transition-colors duration-150 flex items-center justify-center bg-(--btn-regular-bg) hover:bg-(--btn-regular-bg-hover) active:bg-(--btn-regular-bg-active)
+        text-(--btn-content) dark:text-white/75
+    }
+
+    .link-underline {
+        @apply transition-colors duration-150 underline decoration-2 decoration-dashed decoration-(--link-underline)
+        hover:decoration-(--link-hover) active:decoration-(--link-active) underline-offset-[0.25rem]
+    }
+
+    .toc-hide,
+    .toc-not-ready {
+        @apply opacity-0 pointer-events-none
+    }
+
+    /* #toc-inner-wrapper {
+        mask-image: linear-gradient(to bottom, transparent 0%, black 2rem, black calc(100% - 2rem), transparent 100%);
+    } */
+
+    .hide-scrollbar {
+        scrollbar-width: none;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+
+    .text-90 {
+        @apply text-black/90 dark:text-white/90
+    }
+    .text-75 {
+        @apply text-black/75 dark:text-white/75
+    }
+    .text-50 {
+        @apply text-black/50 dark:text-white/50
+    }
+    .text-30 {
+        @apply text-black/30 dark:text-white/30
+    }
+    .text-25 {
+        @apply text-black/25 dark:text-white/25
+    }
+
+    /* 下拉菜单样式 */
+    .dropdown-container {
+        @apply relative;
+    }
+
+    .dropdown-menu {
+        @apply absolute top-full left-0 pt-2 opacity-0 invisible pointer-events-none transition-all duration-200 ease-out transform translate-y-[-8px] z-50;
+    }
+
+    .dropdown-container:hover .dropdown-menu,
+    .dropdown-container:focus-within .dropdown-menu {
+        @apply opacity-100 visible pointer-events-auto translate-y-0;
+    }
+
+    .dropdown-container:hover .dropdown-arrow,
+    .dropdown-container:focus-within .dropdown-arrow {
+        @apply rotate-180;
+    }
+
+    .dropdown-content {
+        @apply bg-(--card-bg) rounded-(--radius-large) shadow-xl border border-black/5 dark:border-white/10 py-2 min-w-48;
+    }
+
+    .dropdown-item {
+        @apply flex items-center justify-between px-4 py-2.5 text-black/75 dark:text-white/75 hover:text-(--primary) hover:bg-(--btn-plain-bg-hover) transition-colors duration-150 font-medium;
+    }
+
+    .dropdown-item:first-child {
+        @apply rounded-t-[calc(var(--radius-large)-0.5rem)];
+    }
+
+    .dropdown-item:last-child {
+        @apply rounded-b-[calc(var(--radius-large)-0.5rem)];
+    }
+
+    /* 移动端菜单样式 */
+    .mobile-submenu {
+        @apply max-h-0 overflow-hidden transition-all duration-300 ease-in-out;
+    }
+    
+    .mobile-dropdown[data-expanded="true"] .mobile-submenu {
+        @apply max-h-96;
+    }
+    
+    .mobile-dropdown[data-expanded="true"] .mobile-dropdown-arrow {
+        @apply rotate-180;
+    }
+
+    /* 响应式隐藏 */
+    @media (max-width: 768px) {
+        .dropdown-container {
+            @apply hidden;
+        }
+    }
+
+    /* 无障碍支持 */
+    .dropdown-container:focus-within .dropdown-menu {
+        @apply opacity-100 visible pointer-events-auto translate-y-0;
+    }
+
+    .dropdown-item:focus {
+        @apply outline-hidden;
+    }
+
+    .mobile-dropdown button:focus {
+        @apply outline-hidden;
+    }
+
+    .meta-icon {
+        @apply w-8 h-8 transition-colors duration-150 rounded-md flex items-center justify-center bg-(--btn-regular-bg)
+        text-(--btn-content) mr-2
+    }
+    .with-divider {
+        @apply before:content-['/'] before:ml-1.5 before:mr-1.5 before:text-(--meta-divider) before:text-sm
+        before:font-medium before:first-of-type:hidden before:transition-colors before:duration-150
+    }
+
+    .btn-regular-dark {
+        @apply flex items-center justify-center
+        bg-[oklch(0.45_0.01_var(--hue))] hover:bg-[oklch(0.50_0.01_var(--hue))] active:bg-[oklch(0.55_0.01_var(--hue))]
+        dark:bg-[oklch(0.30_0.02_var(--hue))] dark:hover:bg-[oklch(0.35_0.03_var(--hue))] dark:active:bg-[oklch(0.40_0.03_var(--hue))]
+    }
+    .btn-regular-dark.success {
+        @apply bg-[oklch(0.75_0.14_var(--hue))] dark:bg-[oklch(0.75_0.14_var(--hue))]
+    }
+}
+
+.custom-md img, #post-cover img {
+    @apply cursor-zoom-in
+}
+
+::selection {
+    background-color: var(--selection-bg)
+}
+
+.dash-line {
+    position: relative;
+}
+
+.dash-line::before {
+    content: "";
+    position: absolute;
+    width: 10%;
+    height: 100%;
+    left: calc(50% - 1px);
+    border-left: 2px dashed var(--line-color);
+    pointer-events: none;
+    transition: all 0.3s;
+    transform: translateY(-50%);
+}
+
+
+/*剧透效果*/
+.custom-md spoiler {
+  --_spoiler-mask: var(--primary);
+  @apply hover:bg-transparent px-1 py-0.5 overflow-hidden rounded-md transition-all duration-150;
+  background-color: var(--_spoiler-mask);
+  box-decoration-break: clone;
+  &:not(:hover) {
+   color: transparent;
+    * {
+       opacity: 0;
+    }
+  }
+}
+
+/* 浅色模式：使用更浅的主题色且完全不透明 */
+:root:not(.dark) .custom-md spoiler {
+  --_spoiler-mask: color-mix(in oklch, var(--primary) 55%, white 45%);
+}
+
+/* 文章列表布局切换样式 */
+.post-list-layout-switch {
+  @apply flex items-center gap-2 mb-6 p-3 bg-(--card-bg) rounded-lg border border-(--line-divider);
+}
+
+.post-list-layout-switch span {
+  @apply text-sm text-(--text-secondary);
+}
+
+.post-list-layout-switch .layout-buttons {
+  @apply flex gap-1;
+}
+
+.post-list-layout-switch button {
+  @apply px-3 py-1.5 text-sm rounded-md transition-colors;
+}
+
+.post-list-layout-switch button.active {
+  @apply bg-(--primary) text-white;
+}
+
+.post-list-layout-switch button:not(.active) {
+  @apply bg-(--bg-secondary) text-(--text-secondary) hover:bg-(--bg-hover);
+}
+
+/* 网格模式下的文章卡片样式调整 */
+.post-list-container.grid-mode .post-card-item {
+  @apply w-full;
+}
+
+.post-list-container.grid-mode .post-card-item a[href] {
+  @apply text-xl before:h-4 before:top-[28px] before:left-[-18px] truncate;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: 2.8em; /* 2行的高度 */
+}
+
+.post-list-container.grid-mode .post-card-item a[aria-label] {
+  @apply hidden;
+}
+
+.post-list-container.grid-mode .post-card-item .btn-regular {
+  @apply hidden;
+}
+
+.post-list-container.grid-mode .post-card-item .line-clamp-1 {
+  @apply line-clamp-2;
+}
+
+/* 网格模式下的卡片内容区域调整 */
+.post-list-container.grid-mode .post-card-item > div {
+  @apply p-4;
+}
+
+/* 网格模式下的元数据样式调整 */
+.post-list-container.grid-mode .post-card-item .post-meta {
+  @apply mb-2;
+}
+
+/* 网格模式下的描述文本调整 */
+.post-list-container.grid-mode .post-card-item .description {
+  @apply text-sm mb-2 line-clamp-2;
+}
+
+/* 网格模式下的统计信息调整 */
+.post-list-container.grid-mode .post-card-item .stats {
+  @apply text-xs;
+}
+
+/* 响应式分页样式 */
+.device-mobile .pagination-info {
+  @apply text-xs;
+}
+
+.device-tablet .pagination-info {
+  @apply text-sm;
+}
+
+.device-desktop .pagination-info {
+  @apply text-base;
+}
+
+/* 分页信息样式 */
+.pagination-info {
+  @apply text-sm text-(--text-secondary) text-center mb-2;
+}
+
+/* ============================================
+ * Glassmorphism 毛玻璃风格
+ * 在壁纸 overlay 模式下为卡片、导航栏、按钮等
+ * 添加统一的 backdrop-filter 模糊与半透明边框
+ * ============================================ */
+
+/* 玻璃拟态基础变量 */
+:root {
+  --glass-border-light: rgba(255, 255, 255, 0.38);
+  --glass-border-dark: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --glass-shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --glass-blur: blur(18px) saturate(160%);
+  --glass-blur-strong: blur(22px) saturate(170%);
+  --glass-blur-soft: blur(14px) saturate(150%);
+  --glass-blur-subtle: blur(16px) saturate(160%);
+}
+
+/* Overlay 透明壁纸模式下的玻璃卡片 */
+body.wallpaper-transparent .card-base,
+body.wallpaper-transparent .card-base-transparent {
+  backdrop-filter: var(--glass-blur);
+  background: rgba(255, 255, 255, 0.52) !important;
+  border: 1px solid var(--glass-border-light);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  body.wallpaper-transparent .card-base,
+  body.wallpaper-transparent .card-base-transparent {
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+}
+
+:root.dark body.wallpaper-transparent .card-base,
+:root.dark body.wallpaper-transparent .card-base-transparent {
+  background: rgba(30, 30, 30, 0.52) !important;
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: var(--glass-shadow-dark);
+}
+
+/* 按钮、下拉菜单、浮动面板玻璃化 */
+body.wallpaper-transparent .btn-card,
+body.wallpaper-transparent .dropdown-content,
+body.wallpaper-transparent .float-panel,
+body.wallpaper-transparent .bg-\(--card-bg\),
+body.wallpaper-transparent .post-list-layout-switch {
+  backdrop-filter: var(--glass-blur);
+  background: rgba(255, 255, 255, 0.42) !important;
+  border: 1px solid var(--glass-border-light);
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  body.wallpaper-transparent .btn-card,
+  body.wallpaper-transparent .dropdown-content,
+  body.wallpaper-transparent .float-panel,
+  body.wallpaper-transparent .bg-\(--card-bg\),
+  body.wallpaper-transparent .post-list-layout-switch {
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+}
+
+:root.dark body.wallpaper-transparent .btn-card,
+:root.dark body.wallpaper-transparent .dropdown-content,
+:root.dark body.wallpaper-transparent .float-panel,
+:root.dark body.wallpaper-transparent .bg-\(--card-bg\),
+:root.dark body.wallpaper-transparent .post-list-layout-switch {
+  background: rgba(30, 30, 30, 0.42) !important;
+  border: 1px solid var(--glass-border-dark);
+}
+
+/* 导航栏玻璃化 - 悬浮圆角胶囊 */
+body.wallpaper-transparent #navbar[data-transparent-mode] > div {
+  backdrop-filter: var(--glass-blur-strong);
+  background: rgba(255, 255, 255, 0.42) !important;
+  border: 1px solid var(--glass-border-light);
+  border-radius: 1rem;
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  body.wallpaper-transparent #navbar[data-transparent-mode] > div {
+    -webkit-backdrop-filter: var(--glass-blur-strong);
+  }
+}
+
+:root.dark body.wallpaper-transparent #navbar[data-transparent-mode] > div {
+  background: rgba(30, 30, 30, 0.42) !important;
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: var(--glass-shadow-dark);
+}
+
+/* 滚动后导航栏增加阴影层次 */
+body.wallpaper-transparent #navbar[data-transparent-mode].navbar-sticky-shadow > div {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+:root.dark body.wallpaper-transparent #navbar[data-transparent-mode].navbar-sticky-shadow > div {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* 文章正文区域玻璃化 */
+body.wallpaper-transparent #post-content,
+body.wallpaper-transparent #post-container,
+body.wallpaper-transparent .post-page-content {
+  backdrop-filter: var(--glass-blur-soft);
+  background: rgba(255, 255, 255, 0.48) !important;
+  border: 1px solid var(--glass-border-light);
+  border-radius: var(--radius-large);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  body.wallpaper-transparent #post-content,
+  body.wallpaper-transparent #post-container,
+  body.wallpaper-transparent .post-page-content {
+    -webkit-backdrop-filter: var(--glass-blur-soft);
+  }
+}
+
+:root.dark body.wallpaper-transparent #post-content,
+:root.dark body.wallpaper-transparent #post-container,
+:root.dark body.wallpaper-transparent .post-page-content {
+  background: rgba(30, 30, 30, 0.48) !important;
+  border: 1px solid var(--glass-border-dark);
+  box-shadow: var(--glass-shadow-dark);
+}
+
+/* 侧边栏小部件玻璃化 */
+body.wallpaper-transparent #left-sidebar .card-base,
+body.wallpaper-transparent #right-sidebar .card-base,
+body.wallpaper-transparent .widget-layout .card-base {
+  backdrop-filter: var(--glass-blur-subtle);
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  body.wallpaper-transparent #left-sidebar .card-base,
+  body.wallpaper-transparent #right-sidebar .card-base,
+  body.wallpaper-transparent .widget-layout .card-base {
+    -webkit-backdrop-filter: var(--glass-blur-subtle);
+  }
+}
+
+/* 评论区域玻璃化 */
+body.wallpaper-transparent #post-comments {
+  backdrop-filter: var(--glass-blur-subtle);
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid var(--glass-border-light);
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  body.wallpaper-transparent #post-comments {
+    -webkit-backdrop-filter: var(--glass-blur-subtle);
+  }
+}
+
+:root.dark body.wallpaper-transparent #post-comments {
+  background: rgba(30, 30, 30, 0.5) !important;
+  border: 1px solid var(--glass-border-dark);
+}
+
+/* 悬停时玻璃卡片轻微高亮 */
+body.wallpaper-transparent .card-base:hover,
+body.wallpaper-transparent .btn-card:hover {
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+:root.dark body.wallpaper-transparent .card-base:hover,
+:root.dark body.wallpaper-transparent .btn-card:hover {
+  background: rgba(45, 45, 45, 0.6) !important;
+}
+
+/* 保证玻璃化元素过渡平滑 */
+body.wallpaper-transparent .card-base,
+body.wallpaper-transparent .card-base-transparent,
+body.wallpaper-transparent .btn-card,
+body.wallpaper-transparent .dropdown-content,
+body.wallpaper-transparent .float-panel,
+body.wallpaper-transparent #navbar[data-transparent-mode] > div,
+body.wallpaper-transparent #post-content,
+body.wallpaper-transparent #post-comments {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    backdrop-filter 0.3s ease;
+}
+
+
+
+/* ---------- 旧版 navbar.css ---------- */
+/**
+ * 统一导航栏样式
+ * 
+ * 模式说明：
+ * ============================================
+ * 1. 壁纸模式 (backgroundWallpaper.mode):
+ *    - "banner": 横幅壁纸模式 (有 #wallpaper-wrapper)
+ *    - "overlay": 全屏壁纸模式 (body.wallpaper-transparent)
+ *    - "none": 纯色背景无壁纸
+ * 
+ * 2. 导航栏配置 (banner.navbar):
+ *    - transparentMode: "semi" | "full" | "semifull" (仅在 Banner 模式下生效)
+ *    - enableBlur: true/false (仅在 Banner 模式下生效)
+ * 
+ * 注意：Overlay 模式下的导航栏始终跟随卡片样式 (var(--card-bg-transparent) + blur)，
+ * 不受 Banner 配置 (transparentMode, enableBlur) 的影响。
+ * ============================================
+ */
+
+@reference "tailwindcss";
+
+@utility navbar-surface-transition {
+  transition:
+    background-color 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    backdrop-filter 0.36s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================
+ * 基础导航栏样式
+ * 适用: 所有模式，所有设备
+ * ============================================ */
+#navbar>div {
+    background-color: var(--card-bg);
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    backdrop-filter: blur(0);
+    margin: 0.6rem 1rem;
+    @apply navbar-surface-transition;
+}
+
+
+/* 通用滚动阴影：用于提升导航栏与页面内容的分层感 */
+#navbar.navbar-sticky-shadow>div {
+    box-shadow: var(--shadow-navbar) !important;
+}
+
+:root.dark #navbar.navbar-sticky-shadow>div {
+    box-shadow: var(--shadow-navbar-dark) !important;
+}
+
+/* semifull 模式的透明阶段不单独显示 sticky shadow，避免 8px 和 50px 两段跳变 */
+#wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"]:not(.scrolled).navbar-sticky-shadow>div,
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scrolled).navbar-sticky-shadow>div {
+    box-shadow: none !important;
+}
+
+/* ============================================
+ * 桌面端 - 亮色主题 - Banner模式
+ * 适用: 桌面端(≥1024px) + Banner模式 + 亮色主题
+ * 遵循: transparentMode, enableBlur 配置
+ * ============================================ */
+@media (min-width: 1024px) {
+
+    /* "semi" */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semi"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"]>div {
+        backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        border-radius: 9999px !important;
+        box-shadow: var(--shadow-navbar) !important;
+    }
+
+    /* "full" */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="full"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="full"]>div {
+        backdrop-filter: blur(0) !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (static) */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]>div {
+        backdrop-filter: blur(0) !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (scrolled) */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"].scrolled>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"].scrolled>div {
+        backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        border-radius: 9999px !important;
+        box-shadow: var(--shadow-navbar) !important;
+    }
+}
+
+/* ============================================
+ * 移动端 - 亮色主题 - Banner模式
+ * 适用: 移动端(≤1023px) + Banner模式 + 亮色主题 + 仅首页生效
+ * ============================================ */
+@media (max-width: 1023px) {
+
+    /* "semi" */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semi"][data-is-home="true"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"][data-is-home="true"]>div {
+        backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        border-radius: 9999px !important;
+        box-shadow: var(--shadow-navbar) !important;
+    }
+
+    /* "full" */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="full"][data-is-home="true"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="full"][data-is-home="true"]>div {
+        backdrop-filter: blur(0) !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (static) */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div {
+        backdrop-filter: blur(0) !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 9999px !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (scrolled) */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div {
+        backdrop-filter: blur(var(--navbar-glass-blur, 20px)) !important;
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        border-radius: 9999px !important;
+        box-shadow: var(--shadow-navbar) !important;
+    }
+}
+
+/* ============================================
+ * 桌面端 - 暗色主题 - Banner模式
+ * ============================================ */
+@media (min-width: 1024px) {
+
+    /* "semi" */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="semi"]>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"]>div {
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        box-shadow: var(--shadow-navbar-dark) !important;
+    }
+
+    /* "full" */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="full"]>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="full"]>div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (static) */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"]>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]>div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (scrolled) */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"].scrolled>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"].scrolled>div {
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        box-shadow: var(--shadow-navbar-dark) !important;
+    }
+}
+
+/* ============================================
+ * 移动端 - 暗色主题 - Banner模式
+ * ============================================ */
+@media (max-width: 1023px) {
+
+    /* "semi" */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="semi"][data-is-home="true"]>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"][data-is-home="true"]>div {
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        box-shadow: var(--shadow-navbar-dark) !important;
+    }
+
+    /* "full" */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="full"][data-is-home="true"]>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="full"][data-is-home="true"]>div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (static) */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* "semifull" (scrolled) */
+    :root.dark #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div,
+    :root.dark body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div {
+        background: color-mix(in oklch, var(--card-bg) calc(var(--opacity-55) * 100%), transparent) !important;
+        box-shadow: var(--shadow-navbar-dark) !important;
+    }
+}
+
+/* ============================================
+ * 移动端悬浮导航栏（小屏使用更小的边距与圆角）
+ * ============================================ */
+@media (max-width: 767px) {
+    #navbar>div {
+        margin: 0.5rem 0.75rem;
+        border-radius: 9999px !important;
+    }
+
+    /* 覆盖 banner 模式 semi / semifull 下的圆角 */
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semi"][data-is-home="true"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"][data-is-home="true"]>div,
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"]>div,
+    #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div,
+    body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-is-home="true"].scrolled>div {
+        border-radius: 9999px !important;
+    }
+}
+
+
+/* ============================================
+ * 关闭毛玻璃模糊效果 - Banner模式
+ * ============================================ */
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"][data-enable-blur="false"]>div,
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semi"][data-enable-blur="false"].scrolled>div {
+    backdrop-filter: blur(0) !important;
+}
+
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="full"][data-enable-blur="false"]>div,
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="full"][data-enable-blur="false"].scrolled>div {
+    backdrop-filter: blur(0) !important;
+}
+
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-enable-blur="false"]>div,
+body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"][data-enable-blur="false"].scrolled>div {
+    backdrop-filter: blur(0) !important;
+}
+
+/* 页面切换期间强制 semifull 保持透明，避免自动回顶时出现背景闪烁 */
+.is-page-transitioning #wallpaper-wrapper~* #navbar[data-transparent-mode="semifull"]:not(.scrolled)>div,
+.is-page-transitioning body:has(#wallpaper-wrapper) #navbar[data-transparent-mode="semifull"]:not(.scrolled)>div {
+    backdrop-filter: blur(0) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+}
+
+
+
+/* ============================================
+ * 下拉菜单和浮动面板毛玻璃化
+ * 按钮展开后面板使用 backdrop-filter 模糊与半透明背景
+ * ============================================ */
+/* 亮色主题 */
+#wallpaper-wrapper~* .dropdown-content,
+#wallpaper-wrapper~* .float-panel,
+body:has(#wallpaper-wrapper) .dropdown-content,
+body:has(#wallpaper-wrapper) .float-panel,
+body.wallpaper-transparent .dropdown-content,
+body.wallpaper-transparent .float-panel {
+    backdrop-filter: var(--glass-blur);
+    background: rgba(255, 255, 255, 0.45) !important;
+    box-shadow: var(--glass-shadow) !important;
+    border: 1px solid var(--glass-border-light) !important;
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+    #wallpaper-wrapper~* .dropdown-content,
+    #wallpaper-wrapper~* .float-panel,
+    body:has(#wallpaper-wrapper) .dropdown-content,
+    body:has(#wallpaper-wrapper) .float-panel,
+    body.wallpaper-transparent .dropdown-content,
+    body.wallpaper-transparent .float-panel {
+        -webkit-backdrop-filter: var(--glass-blur);
+    }
+}
+
+/* 暗色主题 */
+:root.dark #wallpaper-wrapper~* .dropdown-content,
+:root.dark #wallpaper-wrapper~* .float-panel,
+:root.dark body:has(#wallpaper-wrapper) .dropdown-content,
+:root.dark body:has(#wallpaper-wrapper) .float-panel,
+:root.dark body.wallpaper-transparent .dropdown-content,
+:root.dark body.wallpaper-transparent .float-panel {
+    background: rgba(30, 30, 30, 0.45) !important;
+    box-shadow: var(--glass-shadow-dark) !important;
+    border: 1px solid var(--glass-border-dark) !important;
+}
+
+/* ============================================
+ * 全宽导航栏适配 (Full Width Navbar)
+ * 确保在开启全宽模式时覆盖所有圆角和宽度限制
+ * 针对所有模式（Banner模式、壁纸模式、透明模式）统一去除圆角
+ * 使用高优先级选择器确保覆盖原主题样式
+ * ============================================ */
+#navbar-wrapper #navbar[data-full-width="true"] > div,
+body:has(#wallpaper-wrapper) #navbar-wrapper #navbar[data-full-width="true"] > div,
+body.wallpaper-transparent #navbar-wrapper #navbar[data-full-width="true"] > div,
+#navbar-wrapper #navbar[data-full-width="true"].scrolled > div {
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+/* ============================================
+ * 小于1280px时隐藏导航栏菜单图标
+ * ============================================ */
+@media (max-width: 1279px) {
+    .navbar-icon {
+        display: none !important;
+    }
+}
