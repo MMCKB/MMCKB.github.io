@@ -6,18 +6,6 @@
  * ============================================================ */
 
 /* ---------- 旧版 main.css ---------- */
-@import 'tailwindcss';
-@import './layout-styles.css';
-@import './navbar.css';
-@import './banner-title.css';
-@import './waves.css';
-@import './transition.css';
-@import './custom-scrollbar.css';
-@import './gallery.css';
-@import './anime-bangumi.css';
-@import './tags.css';
-@import './display-settings.css';
-@import './categories.css';
 
 @plugin '@tailwindcss/typography';
 
