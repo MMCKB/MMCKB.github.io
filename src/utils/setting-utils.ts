@@ -493,6 +493,63 @@ export function getStoredWallpaperMode(): WALLPAPER_MODE {
 	);
 }
 
+// 材质（毛玻璃 / 液态玻璃）相关
+export type MaterialMode = "glass" | "liquid";
+
+// 默认开启液态玻璃（Apple 液态玻璃材质）
+const DEFAULT_MATERIAL: MaterialMode = "liquid";
+
+export function getDefaultMaterial(): MaterialMode {
+	return DEFAULT_MATERIAL;
+}
+
+export function getStoredMaterial(): MaterialMode {
+	if (
+		typeof localStorage === "undefined" ||
+		typeof localStorage.getItem !== "function"
+	) {
+		return DEFAULT_MATERIAL;
+	}
+	const isSwitchable = displaySettingsConfig.materialSwitchable;
+	if (!isSwitchable) {
+		localStorage.removeItem("material");
+		return DEFAULT_MATERIAL;
+	}
+	const stored = localStorage.getItem("material");
+	return stored === "glass" || stored === "liquid" ? stored : DEFAULT_MATERIAL;
+}
+
+export function applyMaterialToDocument(
+	mode: MaterialMode,
+	animate = true,
+): void {
+	if (typeof document === "undefined") return;
+	if (animate) {
+		document.body.classList.add("is-material-transitioning");
+		window.setTimeout(
+			() => document.body.classList.remove("is-material-transitioning"),
+			400,
+		);
+	}
+	document.body.classList.toggle("liquid-glass", mode === "liquid");
+}
+
+export function setMaterial(mode: MaterialMode): void {
+	if (
+		typeof localStorage === "undefined" ||
+		typeof localStorage.setItem !== "function"
+	) {
+		return;
+	}
+	localStorage.setItem("material", mode);
+	applyMaterialToDocument(mode);
+}
+
+export function initMaterial(): void {
+	const stored = getStoredMaterial();
+	applyMaterialToDocument(stored, false);
+}
+
 // Overlay settings functions
 function clampNumber(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));

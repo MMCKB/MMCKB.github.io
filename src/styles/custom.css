@@ -1111,3 +1111,104 @@ body.wallpaper-transparent #navbar-wrapper #navbar[data-full-width="true"] > div
         display: none !important;
     }
 }
+
+/* ============================================================
+   Apple 液态玻璃材质 (Liquid Glass)
+   - 仅在「透明壁纸 + 液态玻璃材质(body.liquid-glass)」下生效；
+     缺少 .liquid-glass 时上方旧毛玻璃规则仍生效（二者互斥切换）。
+   - 折射：多层 backdrop-filter（blur + saturate + brightness）。
+   - 高光：顶部 inset 白色高光，模拟玻璃受光面。
+   - 色散：左右 inset 阴影做 RGB 边缘分离（左红 / 右青），还原 Apple 边缘色散。
+   - 自适应：暗色模式降低底色调、收敛色散、增强高光。
+   ============================================================ */
+
+/* 玻璃体：导航栏 / 下拉 / 浮动面板 / 卡片 / 正文 / 评论 / 侧栏 */
+body.wallpaper-transparent.liquid-glass #navbar[data-transparent-mode] > div,
+body.wallpaper-transparent.liquid-glass .dropdown-content,
+body.wallpaper-transparent.liquid-glass .float-panel,
+body.wallpaper-transparent.liquid-glass .card-base,
+body.wallpaper-transparent.liquid-glass .card-base-transparent,
+body.wallpaper-transparent.liquid-glass .btn-card,
+body.wallpaper-transparent.liquid-glass #post-content,
+body.wallpaper-transparent.liquid-glass #post-container,
+body.wallpaper-transparent.liquid-glass .post-page-content,
+body.wallpaper-transparent.liquid-glass #post-comments,
+body.wallpaper-transparent.liquid-glass #left-sidebar .card-base,
+body.wallpaper-transparent.liquid-glass #right-sidebar .card-base,
+body.wallpaper-transparent.liquid-glass .widget-layout .card-base {
+	/* 多层折射：模糊 + 饱和 + 微提亮 */
+	backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
+	-webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.1) !important;
+
+	/* 半透明填充 + 玻璃斜向光泽 */
+	background-color: rgba(255, 255, 255, 0.16) !important;
+	background-image: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.3) 0%,
+		rgba(255, 255, 255, 0.05) 45%,
+		rgba(255, 255, 255, 0.12) 100%
+	) !important;
+
+	border: 1px solid rgba(255, 255, 255, 0.35) !important;
+
+	/* 投影 + 顶部高光 + 左右边缘 RGB 色散 */
+	box-shadow:
+		0 8px 32px rgba(0, 0, 0, 0.18),
+		inset 0 1.5px 1px rgba(255, 255, 255, 0.75),
+		inset 0 -1px 1px rgba(0, 0, 0, 0.06),
+		inset 1.5px 0 2px -1px rgba(255, 40, 90, 0.22),
+		inset -1.5px 0 2px -1px rgba(40, 170, 255, 0.26) !important;
+
+	transition:
+		background-color 0.3s ease,
+		border-color 0.3s ease,
+		box-shadow 0.3s ease,
+		backdrop-filter 0.3s ease;
+}
+
+/* 暗色模式：冷底色 + 收敛色散 + 增强高光 */
+:root.dark body.wallpaper-transparent.liquid-glass #navbar[data-transparent-mode] > div,
+:root.dark body.wallpaper-transparent.liquid-glass .dropdown-content,
+:root.dark body.wallpaper-transparent.liquid-glass .float-panel,
+:root.dark body.wallpaper-transparent.liquid-glass .card-base,
+:root.dark body.wallpaper-transparent.liquid-glass .card-base-transparent,
+:root.dark body.wallpaper-transparent.liquid-glass .btn-card,
+:root.dark body.wallpaper-transparent.liquid-glass #post-content,
+:root.dark body.wallpaper-transparent.liquid-glass #post-container,
+:root.dark body.wallpaper-transparent.liquid-glass .post-page-content,
+:root.dark body.wallpaper-transparent.liquid-glass #post-comments,
+:root.dark body.wallpaper-transparent.liquid-glass #left-sidebar .card-base,
+:root.dark body.wallpaper-transparent.liquid-glass #right-sidebar .card-base,
+:root.dark body.wallpaper-transparent.liquid-glass .widget-layout .card-base {
+	background-color: rgba(20, 22, 30, 0.28) !important;
+	background-image: linear-gradient(
+		135deg,
+		rgba(255, 255, 255, 0.16) 0%,
+		rgba(255, 255, 255, 0.02) 45%,
+		rgba(255, 255, 255, 0.08) 100%
+	) !important;
+	border: 1px solid rgba(255, 255, 255, 0.16) !important;
+	box-shadow:
+		0 8px 32px rgba(0, 0, 0, 0.4),
+		inset 0 1.5px 1px rgba(255, 255, 255, 0.35),
+		inset 0 -1px 1px rgba(0, 0, 0, 0.2),
+		inset 1.5px 0 2px -1px rgba(255, 60, 110, 0.18),
+		inset -1.5px 0 2px -1px rgba(60, 180, 255, 0.2) !important;
+}
+
+/* 导航栏胶囊保持液态圆角 */
+body.wallpaper-transparent.liquid-glass #navbar[data-transparent-mode] > div {
+	border-radius: 9999px;
+}
+
+/* 材质切换时的平滑过渡，避免突兀 */
+body.is-material-transitioning #navbar[data-transparent-mode] > div,
+body.is-material-transitioning .card-base,
+body.is-material-transitioning .dropdown-content,
+body.is-material-transitioning .float-panel {
+	transition:
+		background-color 0.4s ease,
+		border-color 0.4s ease,
+		box-shadow 0.4s ease,
+		backdrop-filter 0.4s ease;
+}

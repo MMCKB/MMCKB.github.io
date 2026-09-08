@@ -24,6 +24,7 @@ const DISABLED_SETTINGS: DisplaySettingsConfig = {
 	layoutSwitchable: false,
 	cardBorderSwitchable: false,
 	cardFollowThemeSwitchable: false,
+	materialSwitchable: false,
 	wallpaperModeSwitchable: false,
 	fullscreenLayoutSwitchable: false,
 	wavesSwitchable: false,

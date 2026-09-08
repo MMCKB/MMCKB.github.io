@@ -409,6 +409,9 @@ export const zh_CN: Translation = {
 	[Key.postListLayout]: "文章布局",
 	[Key.postListLayoutList]: "列表",
 	[Key.postListLayoutGrid]: "网格",
+	[Key.material]: "材质",
+	[Key.materialGlass]: "毛玻璃",
+	[Key.materialLiquid]: "液态玻璃",
 
 	// 打赏页面
 	[Key.sponsor]: "打赏",

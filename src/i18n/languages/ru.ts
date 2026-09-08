@@ -420,6 +420,9 @@ export const ru: Translation = {
 	[Key.postListLayout]: "Макет списка сообщений",
 	[Key.postListLayoutList]: "Список",
 	[Key.postListLayoutGrid]: "Сетка",
+	[Key.material]: "Материал",
+	[Key.materialGlass]: "Матовое стекло",
+	[Key.materialLiquid]: "Жидкое стекло",
 
 	// Страница спонсоров
 	[Key.sponsor]: "Спонсор",

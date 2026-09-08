@@ -419,6 +419,9 @@ export const en: Translation = {
 	[Key.postListLayout]: "Post List Layout",
 	[Key.postListLayoutList]: "List",
 	[Key.postListLayoutGrid]: "Grid",
+	[Key.material]: "Material",
+	[Key.materialGlass]: "Frosted Glass",
+	[Key.materialLiquid]: "Liquid Glass",
 
 	// Sponsor Page
 	[Key.sponsor]: "Sponsor",

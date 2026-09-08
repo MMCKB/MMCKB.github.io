@@ -514,13 +514,20 @@ const ogImageAlt = propsOgImageAlt ?? pageTitle;
     <script is:inline>
       (function () {
         const wm = document.documentElement.getAttribute("data-wallpaper-mode");
-        if (!wm) return;
-        document.body.classList.toggle(
-          "wallpaper-transparent",
-          wm === "overlay" ||
-            (wm === "fullscreen" &&
-              document.documentElement.getAttribute("data-fullscreen-layout") === "hero"),
-        );
+        if (wm) {
+          document.body.classList.toggle(
+            "wallpaper-transparent",
+            wm === "overlay" ||
+              (wm === "fullscreen" &&
+                document.documentElement.getAttribute("data-fullscreen-layout") === "hero"),
+          );
+        }
+        // 材质：默认液态玻璃（liquid-glass），读取 localStorage 覆盖（"glass" 则用旧毛玻璃）
+        try {
+          const m = localStorage.getItem("material");
+          const liquid = m ? m === "liquid" : true;
+          document.body.classList.toggle("liquid-glass", liquid);
+        } catch (e) {}
       })();
     </script>
 

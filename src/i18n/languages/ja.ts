@@ -416,6 +416,9 @@ export const ja: Translation = {
 	[Key.postListLayout]: "投稿リストレイアウト",
 	[Key.postListLayoutList]: "リスト",
 	[Key.postListLayoutGrid]: "グリッド",
+	[Key.material]: "素材",
+	[Key.materialGlass]: "すりガラス",
+	[Key.materialLiquid]: "リキッドガラス",
 
 	// スポンサーページ
 	[Key.sponsor]: "スポンサー",

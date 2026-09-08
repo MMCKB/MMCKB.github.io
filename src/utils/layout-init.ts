@@ -18,7 +18,11 @@ import {
 import { initIconLoader } from "@/utils/icon-loader";
 import { initImageLoadFadeIn } from "@/utils/lqip-utils";
 import { initScroll } from "@/utils/scroll-utils";
-import { initThemeListener, initWallpaperMode } from "@/utils/setting-utils";
+import {
+	initMaterial,
+	initThemeListener,
+	initWallpaperMode,
+} from "@/utils/setting-utils";
 import { setupSwupTransitions } from "@/utils/swup-transitions";
 import { initTouchCodeCopyReveal } from "@/utils/touch-copy-utils";
 
@@ -74,6 +78,7 @@ export function initLayout(): void {
 			updateMainGridCols();
 			updateSidebarComponentsVisibility();
 			initWallpaperMode();
+			initMaterial();
 			initThemeListener();
 			initIconLoader();
 			syncFullscreenStateAfterInit();
@@ -82,6 +87,7 @@ export function initLayout(): void {
 		updateMainGridCols();
 		updateSidebarComponentsVisibility();
 		initWallpaperMode();
+		initMaterial();
 		initThemeListener();
 		initIconLoader();
 		syncFullscreenStateAfterInit();

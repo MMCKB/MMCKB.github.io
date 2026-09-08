@@ -15,6 +15,7 @@ import {
 	getDefaultFullscreenLayout,
 	getDefaultGradientEnabled,
 	getDefaultHue,
+	getDefaultMaterial,
 	getDefaultOverlayBlur,
 	getDefaultOverlayCardOpacity,
 	getDefaultOverlayOpacity,
@@ -27,6 +28,7 @@ import {
 	getStoredCardFollowThemeEnabled,
 	getStoredFullscreenLayout,
 	getStoredGradientEnabled,
+	getStoredMaterial,
 	getStoredOverlayBlur,
 	getStoredOverlayCardOpacity,
 	getStoredOverlayOpacity,
@@ -40,12 +42,14 @@ import {
 	setFullscreenLayout,
 	setGradientEnabled,
 	setHue,
+	setMaterial,
 	setOverlayBlur,
 	setOverlayCardOpacity,
 	setOverlayOpacity,
 	setSakuraEnabled,
 	setWallpaperMode,
 	setWavesEnabled,
+	type MaterialMode,
 } from "@utils/setting-utils";
 import { onMount } from "svelte";
 import Icon from "@/components/common/Icon.svelte";
@@ -114,6 +118,12 @@ let cardBorderEnabled = $state(false);
 const defaultCardBorderEnabled = getDefaultCardBorderEnabled();
 let cardFollowThemeEnabled = $state(false);
 const defaultCardFollowThemeEnabled = getDefaultCardFollowThemeEnabled();
+
+// 材质（毛玻璃 / 液态玻璃）
+let material: MaterialMode = $state(getStoredMaterial());
+const defaultMaterial: MaterialMode = getDefaultMaterial();
+const isMaterialSwitchable = displaySettingsConfig.materialSwitchable;
+let materialIsDefault = $derived(material === defaultMaterial);
 
 const isWallpaperSwitchable = displaySettingsConfig.wallpaperModeSwitchable;
 const isFullscreenLayoutSwitchable = $derived(
@@ -199,7 +209,8 @@ const hasAnyContent = $derived(
 		allowLayoutSwitch ||
 		hasBannerSettings ||
 		hasOverlaySettings ||
-		isSakuraSwitchable,
+		isSakuraSwitchable ||
+		isMaterialSwitchable,
 );
 
 // --- Tab visibility ---
@@ -207,7 +218,8 @@ const hasAppearanceTab = $derived(
 	showThemeColor ||
 		allowLayoutSwitch ||
 		isCardBorderSwitchable ||
-		isCardFollowThemeSwitchable,
+		isCardFollowThemeSwitchable ||
+		isMaterialSwitchable,
 );
 const hasWallpaperTab = $derived(
 	isWallpaperSwitchable ||
@@ -456,6 +468,17 @@ function resetCardSettings() {
 		cardFollowThemeEnabled = defaultCardFollowThemeEnabled;
 		setCardFollowThemeEnabled(defaultCardFollowThemeEnabled);
 	}
+}
+
+function switchMaterial(m: MaterialMode) {
+	if (material === m) return;
+	material = m;
+	setMaterial(m);
+}
+
+function resetMaterial() {
+	material = defaultMaterial;
+	setMaterial(defaultMaterial);
 }
 
 function switchWallpaperMode(newMode: WALLPAPER_MODE) {
@@ -801,6 +824,42 @@ $effect(() => {
 					</div>
 				</button>
 				{/if}
+			</div>
+		</div>
+		{/if}
+
+		<!-- Material Section (毛玻璃 / 液态玻璃) -->
+		{#if isMaterialSwitchable}
+		<div>
+			<div class="section-title">
+				{i18n(I18nKey.material)}
+				<button aria-label="Reset to Default" class="btn-regular rounded-md active:scale-90"
+						class:opacity-0={materialIsDefault} class:pointer-events-none={materialIsDefault}
+						disabled={materialIsDefault} aria-hidden={materialIsDefault ? "true" : undefined} onclick={resetMaterial}>
+					<div class="text-(--btn-content)">
+						<Icon icon="fa7-solid:arrow-rotate-left" class="text-[0.75rem]"></Icon>
+					</div>
+				</button>
+			</div>
+			<div class="grid grid-cols-2 gap-2">
+				<button
+					class="btn-regular rounded-md py-2 px-3 flex items-center justify-center gap-2 active:scale-95 transition-all relative overflow-hidden"
+					class:opacity-60={material !== "glass"}
+					class:bg-(--btn-regular-bg-hover)={material === "glass"}
+					onclick={() => switchMaterial("glass")}
+				>
+					<Icon icon="material-symbols:blur-on" class="text-[1.25rem] shrink-0"></Icon>
+					<span class="text-xs font-medium">{i18n(I18nKey.materialGlass)}</span>
+				</button>
+				<button
+					class="btn-regular rounded-md py-2 px-3 flex items-center justify-center gap-2 active:scale-95 transition-all relative overflow-hidden"
+					class:opacity-60={material !== "liquid"}
+					class:bg-(--btn-regular-bg-hover)={material === "liquid"}
+					onclick={() => switchMaterial("liquid")}
+				>
+					<Icon icon="material-symbols:water-drop" class="text-[1.25rem] shrink-0"></Icon>
+					<span class="text-xs font-medium">{i18n(I18nKey.materialLiquid)}</span>
+				</button>
 			</div>
 		</div>
 		{/if}

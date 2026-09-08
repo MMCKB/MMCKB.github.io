@@ -29,6 +29,9 @@ export type DisplaySettingsConfig = {
 	// 卡片风格跟随主题色开关
 	cardFollowThemeSwitchable: boolean;
 
+	// 材质（毛玻璃 / 液态玻璃）切换开关
+	materialSwitchable: boolean;
+
 	// ── 壁纸 (Wallpaper) ──────────────────────────────────
 
 	// 壁纸模式切换开关

@@ -406,6 +406,11 @@ enum I18nKey {
 	postListLayoutList = "postListLayoutList",
 	postListLayoutGrid = "postListLayoutGrid",
 
+	// 材质（毛玻璃 / 液态玻璃）
+	material = "material",
+	materialGlass = "materialGlass",
+	materialLiquid = "materialLiquid",
+
 	// 打赏页面
 	sponsor = "sponsor",
 	sponsorTitle = "sponsorTitle",
