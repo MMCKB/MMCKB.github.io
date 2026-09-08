@@ -1,4 +1,12 @@
 @import 'tailwindcss';
+/* 自定义字体：通过 @fontsource 包加载，由 Vite 在构建期从本地 node_modules 打包，
+   不依赖外网 CDN（修复 CI 无法访问 jsDelivr 导致构建失败的问题）。仅加载 latin + cyrillic 子集。 */
+@import "@fontsource/zen-maru-gothic/latin.css";
+@import "@fontsource/zen-maru-gothic/cyrillic.css";
+@import "@fontsource/inter/latin.css";
+@import "@fontsource/inter/cyrillic.css";
+@import "@fontsource/jetbrains-mono/latin.css";
+@import "@fontsource/jetbrains-mono/cyrillic.css";
 @import './layout-styles.css';
 @import './navbar.css';
 @import './banner-title.css';
@@ -12,6 +20,7 @@
 @import './categories.css';
 @import './layout-base.css';
 @import './custom.css';
+@import './fonts.css';
 
 @plugin '@tailwindcss/typography';
 

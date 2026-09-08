@@ -1,0 +1,23 @@
+/* 字体 CSS 变量定义
+ *
+ * 背景：上游 Firefly 通过 Astro Font API（fontConfig.enable = true）在构建期从
+ * jsDelivr 下载 woff2 并自托管。但 GitHub Pages 的 CI 运行器无法访问 jsDelivr，
+ * 导致 `astro build` 抛 CannotFetchFontFile 而部署失败。
+ *
+ * 解决方案：关闭 Astro Font API（fontConfig.enable = false），改由本文件通过
+ * @fontsource 包（见 main.css 顶部的 @import）在构建期由 Vite 从本地 node_modules
+ * 打包字体，构建期完全不依赖外网。以下变量保持与原 FontSetup 注入完全一致，
+ * 因此站点外观不变：横幅主标题用 Zen Maru Gothic，副标题用 Inter，代码用 JetBrains Mono。
+ */
+
+:root {
+	--font-zen-maru-gothic: "Zen Maru Gothic", sans-serif;
+	--font-inter: "Inter", sans-serif;
+	--font-jetbrains-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+		Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+	/* 区域字体变量（原由 FontSetup.astro 在 enable=true 时注入，这里手动对齐） */
+	--font-banner-title: var(--font-zen-maru-gothic, inherit);
+	--font-banner-subtitle: var(--font-inter, inherit);
+	--font-navbar-title: inherit;
+}
